@@ -1,53 +1,52 @@
 name: Build FantasticMC APK
 
 'on':
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+workflow_dispatch:
+push:
+branches:
+- main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+build:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-      - name: Check project ZIP
-        run: |
-          test -f FantasticMC_Corrected_Android_Project.zip
+  - name: Check project ZIP
+    run: test -f FantasticMC.zip
 
-      - name: Extract Android project
-        run: |
-          mkdir extracted_project
-          unzip -o FantasticMC_Corrected_Android_Project.zip -d extracted_project
-          find extracted_project -name settings.gradle
+  - name: Extract Android project
+    run: |
+      mkdir extracted_project
+      unzip -o FantasticMC.zip -d extracted_project
+      find extracted_project -name settings.gradle -o -name settings.gradle.kts
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: '17'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+  - name: Set up Gradle
+    uses: gradle/actions/setup-gradle@v4
 
-      - name: Find Android project
-        run: |
-          PROJECT_DIR="$(find extracted_project -name settings.gradle -print -quit)"
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "ERROR: settings.gradle was not found"
-            exit 1
-          fi
-          echo "PROJECT_DIR=$(dirname "$PROJECT_DIR")" >> "$GITHUB_ENV"
+  - name: Find Android project
+    run: |
+      PROJECT_FILE="$(find extracted_project -name settings.gradle -o -name settings.gradle.kts -print -quit)"
+      if [ -z "$PROJECT_FILE" ]; then
+        echo "ERROR: Gradle settings file not found inside FantasticMC.zip"
+        exit 1
+      fi
+      echo "PROJECT_DIR=$(dirname "$PROJECT_FILE")" >> "$GITHUB_ENV"
 
-      - name: Build FantasticMC
-        run: gradle -p "$PROJECT_DIR" :app:assembleDebug
+  - name: Build FantasticMC
+    run: gradle -p "$PROJECT_DIR" :app:assembleDebug
 
-      - name: Upload FantasticMC APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FantasticMC-APK
-          path: extracted_project/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+  - name: Upload FantasticMC APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: FantasticMC-APK
+      path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
+      if-no-files-found: error
