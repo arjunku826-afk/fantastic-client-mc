@@ -1,45 +1,20 @@
 name: Build FantasticMC APK
-'on': [push, workflow_dispatch]
+'on': workflow_dispatch
 
 jobs:
 build:
 runs-on: ubuntu-latest
 steps:
-- name: Checkout repository
-uses: actions/checkout@v4
-
-  - name: Check ZIP
-    run: test -f FantasticMC.zip
-
-  - name: Extract project
-    run: |
-      mkdir extracted_project
-      unzip -o FantasticMC.zip -d extracted_project
-
-  - name: Set up Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: '17'
-
-  - name: Set up Gradle
-    uses: gradle/actions/setup-gradle@v4
-
-  - name: Find project
-    run: |
-      PROJECT_FILE=$(find extracted_project -name settings.gradle -o -name settings.gradle.kts -print -quit)
-      if [ -z "$PROJECT_FILE" ]; then
-        echo "ERROR: Gradle settings file not found in ZIP"
-        exit 1
-      fi
-      echo "PROJECT_DIR=$(dirname "$PROJECT_FILE")" >> "$GITHUB_ENV"
-
-  - name: Build APK
-    run: gradle -p "$PROJECT_DIR" :app:assembleDebug
-
-  - name: Upload APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: FantasticMC-New-APK
-      path: extracted_project/**/app/build/outputs/apk/debug/*.apk
-      if-no-files-found: error
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+with:
+distribution: temurin
+java-version: '17'
+- uses: gradle/actions/setup-gradle@v4
+- name: Check ZIP
+run: test -f FantasticMC.zip
+- name: Extract ZIP
+run: unzip -o FantasticMC.zip -d extracted_project
+- name: Locate project
+run: |
+find extracted_project -name settings.gradle -o -name settings.gradle.kts
