@@ -1,6 +1,6 @@
 name: Build FantasticMC APK
 
-'on':
+on:
 workflow_dispatch:
 push:
 branches:
@@ -14,13 +14,14 @@ steps:
   - name: Checkout repository
     uses: actions/checkout@v4
 
-  - name: Check project ZIP
+  - name: Check ZIP
     run: test -f FantasticMC.zip
 
   - name: Extract Android project
     run: |
       mkdir extracted_project
       unzip -o FantasticMC.zip -d extracted_project
+      find extracted_project -name settings.gradle -o -name settings.gradle.kts
 
   - name: Set up Java
     uses: actions/setup-java@v4
@@ -33,19 +34,19 @@ steps:
 
   - name: Find Android project
     run: |
-      PROJECT_FILE="$(find extracted_project -name settings.gradle -o -name settings.gradle.kts -print -quit)"
+      PROJECT_FILE=$(find extracted_project -name settings.gradle -o -name settings.gradle.kts | head -n 1)
       if [ -z "$PROJECT_FILE" ]; then
-        echo "ERROR: Gradle settings file not found inside FantasticMC.zip"
+        echo "ERROR: Gradle settings file not found"
         exit 1
       fi
       echo "PROJECT_DIR=$(dirname "$PROJECT_FILE")" >> "$GITHUB_ENV"
 
-  - name: Build FantasticMC
+  - name: Build APK
     run: gradle -p "$PROJECT_DIR" :app:assembleDebug
 
-  - name: Upload FantasticMC APK
+  - name: Upload APK
     uses: actions/upload-artifact@v4
     with:
-      name: FantasticMC-APK
-      path: extracted_project/app/build/outputs/apk/debug/app-debug.apk
+      name: FantasticMC-New-APK
+      path: extracted_project/**/app/build/outputs/apk/debug/*.apk
       if-no-files-found: error
