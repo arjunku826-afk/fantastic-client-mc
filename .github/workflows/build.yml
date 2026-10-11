@@ -1,27 +1,20 @@
 name: Build FantasticMC APK
-
-'on':
-workflow_dispatch:
-push:
-branches:
-- main
+'on': [push, workflow_dispatch]
 
 jobs:
 build:
 runs-on: ubuntu-latest
-
 steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+- name: Checkout repository
+uses: actions/checkout@v4
 
   - name: Check ZIP
     run: test -f FantasticMC.zip
 
-  - name: Extract Android project
+  - name: Extract project
     run: |
       mkdir extracted_project
       unzip -o FantasticMC.zip -d extracted_project
-      find extracted_project -name settings.gradle -o -name settings.gradle.kts
 
   - name: Set up Java
     uses: actions/setup-java@v4
@@ -32,11 +25,11 @@ steps:
   - name: Set up Gradle
     uses: gradle/actions/setup-gradle@v4
 
-  - name: Find Android project
+  - name: Find project
     run: |
       PROJECT_FILE=$(find extracted_project -name settings.gradle -o -name settings.gradle.kts -print -quit)
       if [ -z "$PROJECT_FILE" ]; then
-        echo "ERROR: Gradle settings file not found"
+        echo "ERROR: Gradle settings file not found in ZIP"
         exit 1
       fi
       echo "PROJECT_DIR=$(dirname "$PROJECT_FILE")" >> "$GITHUB_ENV"
