@@ -1,6 +1,6 @@
 name: Build FantasticMC APK
 
-on:
+'on':
 workflow_dispatch:
 push:
 branches:
@@ -9,23 +9,19 @@ branches:
 jobs:
 build:
 runs-on: ubuntu-latest
-
 steps:
-  - name: Download repository
-    uses: actions/checkout@v4
+- name: Checkout repository
+uses: actions/checkout@v4
 
-  - name: Set up Java
+  - name: Set up Java 17
     uses: actions/setup-java@v4
     with:
       distribution: temurin
       java-version: '17'
 
-  - name: Set up Gradle
-    uses: gradle/actions/setup-gradle@v4
-
-  - name: Build FantasticMC APK
+  - name: Build APK
     run: |
-      chmod +x ./gradlew
+      chmod +x gradlew
       ./gradlew assembleDebug
 
   - name: Upload APK
