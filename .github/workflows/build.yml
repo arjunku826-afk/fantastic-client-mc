@@ -4,5 +4,4 @@ jobs:
 test:
 runs-on: ubuntu-latest
 steps:
-- name: Check workflow
-run: echo "FantasticMC workflow works"
+- run: echo "FantasticMC workflow works"
